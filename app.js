@@ -1149,7 +1149,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Each preset = a saved bundle of toggle values.
 const VP_PRESETS = {
   a:   { label: "(a) SOFIA-led",      vals: { searchbar: "sofia", inlineBox: false, homeShifu: true,  sofiaInShifu: false, navPattern: "2", disney: "shifu", universal: "shifu" } },
-  b:   { label: "(b) Caja clásica",   vals: { searchbar: "box",   inlineBox: false, homeShifu: false, sofiaInShifu: true,  navPattern: "1", disney: "shifu", universal: "shifu" } },
+  b:   { label: "(b) Caja clásica reversionada", vals: { searchbar: "box",   inlineBox: false, homeShifu: false, sofiaInShifu: true,  navPattern: "1", disney: "shifu", universal: "shifu" } },
   box: { label: "(c) Box-on-home",     vals: { searchbar: "sofia", inlineBox: true,  homeShifu: true,  sofiaInShifu: false, navPattern: "2", disney: "shifu", universal: "shifu" } },
 };
 
@@ -1169,7 +1169,7 @@ let vp = { preset: "a", over: {}, open: true };
 function vpEffective() {
   const v = Object.assign({}, VP_PRESETS[vp.preset].vals, vp.over);
   // SOFIA must stay reachable in the shifu if the bar opens the box or the bar is hidden
-  if (v.searchbar === "box")  v.sofiaInShifu = true;
+  if (v.searchbar === "box")  { v.sofiaInShifu = true; v.inlineBox = false; } // (b) classic bar ⇒ no inline box
   if (v.searchbar === "none") v.sofiaInShifu = true;
   // Box-on-home (d-ii): the bar is the SOFIA entry, so SOFIA leaves the shifu
   if (v.inlineBox && v.searchbar === "sofia") v.sofiaInShifu = false;
@@ -1252,6 +1252,7 @@ function vpDependencyUI(eff) {
   // SOFIA-in-shifu is locked whenever the bar opens the box, the bar is hidden, or box-on-home couples it
   dim("sofiaInShifu", !!eff.inlineBox || eff.searchbar === "box" || eff.searchbar === "none");
   dim("homeShifu", !!eff.inlineBox);
+  dim("inlineBox", eff.searchbar === "box"); // (b) inline box disabled when the bar opens the classic box
 }
 
 function vpSetOverride(k, v) { vp.over[k] = v; vpSave(); vpRender(); applyVision(); }
@@ -1430,9 +1431,13 @@ function sofiaTurn(i, prompt) {
 
 // (b) When the user talks with "Tabs fijas" on, the pinned tabs slide up out of view
 function hideSofiaTabsOnTalk() {
-  if (vpEffective().navPattern !== "1") return;
-  const nav = document.getElementById("sofiaNav");
-  if (nav && nav.classList.contains("sofia-nav--tabs")) nav.classList.add("sofia-nav--collapsed");
+  const np = vpEffective().navPattern;
+  if (np === "1") {
+    const nav = document.getElementById("sofiaNav");
+    if (nav && nav.classList.contains("sofia-nav--tabs")) nav.classList.add("sofia-nav--collapsed");
+  } else if (np === "2") {
+    document.body.classList.add("seg-collapsed"); // (b) hide the segmented shell as the chat grows
+  }
 }
 
 function lastRealProduct() {
@@ -1462,6 +1467,13 @@ function applySofiaNav(eff) {
   if (moreGrid) moreGrid.innerHTML = "";
   closeSofiaMoreSheet();
   if (sheetBack) sheetBack.onclick = null;
+
+  // Persistent segmented shell only exists in pattern 2
+  if (eff.navPattern !== "2") {
+    const f = document.getElementById("segFloat");
+    if (f) f.hidden = true;
+    document.body.classList.remove("seg-mode", "seg-collapsed");
+  }
 
   const segHTML = (active) => `<div class="seg-switch" data-active="${active}">
       <span class="seg-thumb"></span>
@@ -1504,26 +1516,9 @@ function applySofiaNav(eff) {
     }
     if (sheetBack) sheetBack.onclick = closeSofiaMoreSheet;
   } else if (eff.navPattern === "2") {
-    // Cohesive segmented control in BOTH the SOFIA view and the box view
-    nav.classList.add("sofia-nav--seg");
-    nav.innerHTML = segHTML("chat"); nav.hidden = false;
-    nav.querySelectorAll("[data-seg]").forEach(b => b.addEventListener("click", () => {
-      if (b.dataset.seg !== "box") return;
-      const sw = b.closest(".seg-switch"); if (sw) sw.dataset.active = "box"; // slide the pill first
-      setTimeout(() => sofiaMorphTo(lastRealProduct()), 220);                 // then soft screen morph
-    }));
-    if (seg) {
-      // (b)(ii) place the segmented ABOVE the shifu in the box, matching SOFIA's position for a sense of unity
-      const sboxTop = document.querySelector("#sbox .sbox-top");
-      const sboxTabs = document.getElementById("sboxTabs");
-      if (sboxTop && sboxTabs && seg.parentElement !== sboxTop) sboxTop.insertBefore(seg, sboxTabs);
-      seg.innerHTML = segHTML("box"); seg.hidden = false;
-      seg.querySelectorAll("[data-seg]").forEach(b => b.addEventListener("click", () => {
-        if (b.dataset.seg !== "chat") return;
-        const sw = b.closest(".seg-switch"); if (sw) sw.dataset.active = "chat";
-        setTimeout(() => boxMorphToSofia(), 220);
-      }));
-    }
+    // Shared shell: one persistent segmented control; only the content below it swaps
+    buildSegFloat();
+    updateSegFloat(currentScreenId());
   } else if (eff.navPattern === "3" || eff.navPattern === "4") {
     // Collapsible side-nav drawer, triggered from the bottom-left next to the chat box
     if (trigger) {
@@ -1649,6 +1644,82 @@ function boxMorphToSofia() {
   if (el) setTimeout(() => el.classList.remove("screen--soft"), 460);
 }
 
+/* ---------- Pattern 2 shared shell: one persistent segmented control, only the body swaps ---------- */
+function currentScreenId() { return (document.querySelector(".screen.active") || {}).id || ""; }
+
+function buildSegFloat() {
+  const ctrl = document.getElementById("segFloatCtrl");
+  if (!ctrl) return;
+  ctrl.innerHTML = `<div class="seg-switch" data-active="chat">
+      <span class="seg-thumb"></span>
+      <button data-seg="chat">💬 Chat</button>
+      <button data-seg="box">🔍 Búsqueda</button>
+    </div>`;
+  ctrl.querySelectorAll("[data-seg]").forEach(b => b.addEventListener("click", () => {
+    const sw = b.closest(".seg-switch");
+    if (b.dataset.seg === "box") { if (sw) sw.dataset.active = "box"; segGoBox(); }
+    else { if (sw) sw.dataset.active = "chat"; segGoChat(); }
+  }));
+  const back = document.getElementById("segFloatBack");
+  if (back) back.onclick = () => showScreen("home");
+}
+function segGoBox() { state.boxTarget = "sbox"; setProduct(lastRealProduct()); softShowScreen("sbox"); }
+function segGoChat() {
+  const el = document.getElementById("sofiaLanding");
+  if (el) el.classList.add("screen--soft");
+  goLanding("sofia");
+  if (el) setTimeout(() => el.classList.remove("screen--soft"), 460);
+}
+
+// Show/position the persistent shell and swap which content sits beneath it
+function updateSegFloat(id) {
+  const float = document.getElementById("segFloat");
+  if (!float) return;
+  const inSeg = vpEffective().navPattern === "2" && (id === "sofiaLanding" || id === "sbox");
+  document.body.classList.toggle("seg-mode", inSeg);
+  if (!inSeg) { float.hidden = true; document.body.classList.remove("seg-collapsed"); return; }
+  float.hidden = false;
+  const mode = id === "sbox" ? "box" : "chat";
+  float.classList.toggle("seg-float--box", mode === "box");
+  float.style.background = mode === "box" ? "#270570" : "#ffffff";
+  const sw = float.querySelector(".seg-switch");
+  if (sw) sw.dataset.active = mode;
+  if (mode === "box") document.body.classList.remove("seg-collapsed"); // segmented stays visible in box mode
+}
+
+// (d) Airbnb-style: the search bar expands to fill the screen (and changes color) before opening
+function expandSearchbar(toColor, done) {
+  const bar = document.getElementById("homeSearchbar");
+  const phone = document.querySelector(".phone");
+  if (!bar || !phone) { done(); return; }
+  const r = bar.getBoundingClientRect();
+  const p = phone.getBoundingClientRect();
+
+  const ov = document.createElement("div");
+  ov.className = "sb-expand";
+  ov.style.left = (r.left - p.left) + "px";
+  ov.style.top = (r.top - p.top) + "px";
+  ov.style.width = r.width + "px";
+  ov.style.height = r.height + "px";
+  ov.style.borderRadius = "20px";
+  ov.style.background = "#F2F4F5";
+  phone.appendChild(ov);
+
+  requestAnimationFrame(() => {           // grow to cover the whole phone + morph color
+    ov.style.left = "0px"; ov.style.top = "0px";
+    ov.style.width = p.width + "px"; ov.style.height = p.height + "px";
+    ov.style.borderRadius = "0px";
+    ov.style.background = toColor;
+  });
+
+  setTimeout(() => {                       // reveal the target screen, then fade the overlay away
+    done();
+    ov.style.transition = "opacity .22s ease";
+    ov.style.opacity = "0";
+    setTimeout(() => ov.remove(), 240);
+  }, 400);
+}
+
 function vpShareLink() {
   vpSave();
   const url = location.href;
@@ -1670,8 +1741,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   $("#homeSearchbar")?.addEventListener("click", () => {
     const eff = vpEffective();
-    if (eff.searchbar === "sofia") goLanding("sofia");
-    else if (eff.searchbar === "box") openSbox("alojamientos");
+    if (eff.searchbar === "sofia") expandSearchbar("#ffffff", () => goLanding("sofia"));
+    else if (eff.searchbar === "box") expandSearchbar("#270570", () => openSbox("alojamientos"));
   });
 
   // (b) Tabs fijas: scrolling the chat up brings the hidden tabs back; scrolling down hides them
@@ -1679,11 +1750,20 @@ document.addEventListener("DOMContentLoaded", () => {
   if (slChat) {
     let last = 0;
     slChat.addEventListener("scroll", () => {
-      const nav = document.getElementById("sofiaNav");
-      if (!nav || !nav.classList.contains("sofia-nav--tabs")) return;
+      const np = vpEffective().navPattern;
       const st = slChat.scrollTop;
-      if (st < last - 3) nav.classList.remove("sofia-nav--collapsed");        // scrolling up → reveal
-      else if (st > last + 3 && st > 24) nav.classList.add("sofia-nav--collapsed"); // scrolling down → hide
+      const up = st < last - 3, down = st > last + 3 && st > 24;
+      if (np === "1") {
+        const nav = document.getElementById("sofiaNav");
+        if (nav && nav.classList.contains("sofia-nav--tabs")) {
+          if (up) nav.classList.remove("sofia-nav--collapsed");
+          else if (down) nav.classList.add("sofia-nav--collapsed");
+        }
+      } else if (np === "2" && document.body.classList.contains("seg-mode")
+                 && document.getElementById("sofiaLanding")?.classList.contains("active")) {
+        if (up) document.body.classList.remove("seg-collapsed");
+        else if (down) document.body.classList.add("seg-collapsed");
+      }
       last = st;
     });
   }
@@ -1700,3 +1780,10 @@ document.addEventListener("DOMContentLoaded", () => {
   applyVision();
   showScreen("home"); // land on home on initial load only
 });
+
+/* Keep the pattern-2 shared shell in sync on every navigation */
+const _origShowScreen = showScreen;
+showScreen = function (id) {
+  _origShowScreen(id);
+  try { updateSegFloat(id); } catch (e) {}
+};
