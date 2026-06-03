@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Despegar · Prototipo de app</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="phone">
+    <!-- ===================== HOME ===================== -->
+    <section id="home" class="screen home active" aria-label="Home">
+      <header class="home-top">
+        <div class="status-bar">
+          <span class="time">13:39</span>
+          <span class="status-icons">
+            <span class="sb-dot"></span><span class="sb-dot"></span><span class="sb-dot"></span>
+            <span class="sb-battery"></span>
+          </span>
+        </div>
+
+        <div class="home-search-row">
+          <button class="home-searchbar" id="homeSearchbar">
+            <svg viewBox="0 0 24 24" class="ic" data-icon="search"></svg>
+            <span id="homeSearchbarLabel">¿Qué andás buscando?</span>
+          </button>
+          <button class="cart-btn" aria-label="Carrito">
+            <svg viewBox="0 0 24 24" data-icon="cart"></svg>
+          </button>
+        </div>
+
+        <!-- Inline searchbox (box-on-home vision) — rendered by Vision Explorer -->
+        <div class="home-inline-box" id="homeInlineBox" hidden></div>
+
+        <div class="product-chips" id="homeChips">
+          <button class="chip" data-open-sbox="sofia">
+            <span class="chip-icon" data-svg="sofia"></span>
+            <span class="chip-label">SOFIA</span>
+          </button>
+          <button class="chip" data-open-sbox="alojamientos">
+            <span class="chip-icon" data-svg="alojamientos"></span>
+            <span class="chip-label">Alojamientos</span>
+          </button>
+          <button class="chip" data-open-sbox="vuelos">
+            <span class="chip-icon" data-svg="vuelos"></span>
+            <span class="chip-label">Vuelos</span>
+          </button>
+          <button class="chip chip--badge" data-open-sbox="paquetes">
+            <span class="badge-bubble">Ahorrá</span>
+            <span class="chip-icon" data-svg="paquetes"></span>
+            <span class="chip-label">Paquetes</span>
+          </button>
+          <button class="chip" data-home-more>
+            <span class="chip-icon chip-icon--plus">+</span>
+            <span class="chip-label">Ver todos</span>
+          </button>
+        </div>
+
+        <!-- Disney/Universal home access points (banner/chip modes) — rendered by Vision Explorer -->
+        <div class="du-home" id="duHome" hidden></div>
+
+        <button class="benefits-banner">
+          <span class="benefits-left">
+            <svg viewBox="0 0 24 24" class="ic" data-icon="trophy"></svg>
+            <span><strong>Mis beneficios</strong> <span class="muted">Descubrí cupones y puntos</span></span>
+          </span>
+          <span class="chev">›</span>
+        </button>
+      </header>
+
+      <div class="home-body">
+        <h2 class="section-title">Continúa tu búsqueda</h2>
+
+        <article class="last-search-card">
+          <div class="ls-head">
+            <svg viewBox="0 0 24 24" class="ic-plane" data-icon="vuelos-color"></svg>
+            <span class="ls-tag">VUELOS IDA Y VUELTA</span>
+          </div>
+          <h3 class="ls-title">Milwaukee</h3>
+          <p class="ls-info">21 de dic al 27 de dic <span class="sep">·</span> Desde Buenos Aires</p>
+          <div class="ls-actions">
+            <button class="btn btn-ghost">Ver plan de viaje</button>
+            <button class="btn btn-primary" data-open-sbox="vuelos">Buscar</button>
+          </div>
+          <div class="dots">
+            <span class="d-dot active"></span>
+            <span class="d-dot"></span>
+            <span class="d-dot"></span>
+          </div>
+        </article>
+
+        <div class="promo-row">
+          <article class="promo-card black-friday">
+            <div class="bf-tag">BLACK <span>FRIDAY</span></div>
+            <div class="bf-price">Hasta<br><span>$800.000</span> OFF</div>
+            <div class="bf-cuotas">+3 CUOTAS</div>
+          </article>
+          <article class="promo-card paq-card">
+            <div class="paq-title">Paquetes<br>INTE...</div>
+            <div class="paq-price">$<br>3...</div>
+          </article>
+        </div>
+      </div>
+
+      <nav class="bottom-nav">
+        <button class="nav-item active">
+          <svg viewBox="0 0 24 24" data-icon="home"></svg><span>Inicio</span>
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" data-icon="offers"></svg><span>Ofertas</span>
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" data-icon="trips"></svg><span>Mis Viajes</span>
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" data-icon="user"></svg><span>Iniciar sesión</span>
+        </button>
+      </nav>
+
+      <!-- Home "Más" bottom sheet — rendered by Vision Explorer -->
+      <div class="bs-backdrop" id="homeSheetBackdrop" hidden></div>
+      <div class="bottom-sheet" id="homeMoreSheet" hidden>
+        <div class="bs-handle"></div>
+        <h3 class="bs-title">Elegí un producto</h3>
+        <div class="bs-grid" id="homeMoreGrid"></div>
+      </div>
+    </section>
+
+    <!-- ===================== SEARCH MODAL ===================== -->
+    <section id="sbox" class="screen sbox" aria-label="Caja de búsqueda" hidden>
+      <header class="sbox-top">
+        <button class="sbox-close" aria-label="Cerrar" id="closeSbox">
+          <svg viewBox="0 0 24 24" data-icon="close"></svg>
+        </button>
+
+        <nav class="sbox-tabs" id="sboxTabs">
+          <button class="tab" data-tab="sofia">
+            <span class="tab-icon" data-svg="sofia"></span>
+            <span>SOFIA</span>
+          </button>
+          <button class="tab active" data-tab="alojamientos">
+            <span class="tab-icon" data-svg="alojamientos"></span>
+            <span>Alojamientos</span>
+          </button>
+          <button class="tab" data-tab="vuelos">
+            <span class="tab-icon" data-svg="vuelos"></span>
+            <span>Vuelos</span>
+          </button>
+          <button class="tab" data-tab="paquetes">
+            <span class="tab-icon" data-svg="paquetes"></span>
+            <span>Paquetes</span>
+          </button>
+          <button class="tab tab--more" data-tab="more">
+            <span class="tab-icon" data-svg="more-dots"></span>
+            <span>Más</span>
+          </button>
+        </nav>
+      </header>
+
+      <div class="sbox-divider"></div>
+
+      <!-- Chat/Búsqueda segmented control (nav pattern 2) — rendered by Vision Explorer -->
+      <div class="sbox-seg" id="sboxSeg" hidden></div>
+
+      <div class="sbox-product-header">
+        <span class="sph-icon" id="sphIcon"></span>
+        <h2 class="sph-title" id="sphTitle">Alojamientos</h2>
+      </div>
+
+      <main class="sbox-body" id="sboxBody"></main>
+
+      <footer class="sbox-footer">
+        <button class="btn-search" id="btnSearch">
+          <svg viewBox="0 0 24 24" class="ic" data-icon="search"></svg>
+          Buscar
+        </button>
+      </footer>
+
+      <!-- More bottom sheet -->
+      <div class="bs-backdrop" id="bsBackdrop" hidden></div>
+      <div class="bottom-sheet" id="moreSheet" hidden>
+        <div class="bs-handle"></div>
+        <h3 class="bs-title">Elegí un producto</h3>
+        <div class="bs-grid" id="bsGrid">
+          <button class="bs-item" data-product="sofia"><span class="bs-circle bs-circle--ai" data-svg="sofia"></span><span>SOFIA</span></button>
+          <button class="bs-item" data-product="alojamientos"><span class="bs-circle" data-svg="alojamientos"></span><span>Alojamientos</span></button>
+          <button class="bs-item" data-product="vuelos"><span class="bs-circle" data-svg="vuelos"></span><span>Vuelos</span></button>
+          <button class="bs-item" data-product="paquetes"><span class="bs-circle" data-svg="paquetes"></span><span>Paquetes</span></button>
+          <button class="bs-item" data-product="actividades"><span class="bs-circle" data-svg="actividades"></span><span>Actividades</span></button>
+          <button class="bs-item" data-product="autos"><span class="bs-circle" data-svg="autos"></span><span>Autos</span></button>
+          <button class="bs-item" data-product="disney"><span class="bs-circle" data-svg="disney"></span><span>Disney</span></button>
+          <button class="bs-item" data-product="universal"><span class="bs-circle" data-svg="universal"></span><span>Universal</span></button>
+          <button class="bs-item" data-product="asistencias"><span class="bs-circle" data-svg="asistencias"></span><span>Asistencias</span></button>
+          <button class="bs-item" data-product="traslados"><span class="bs-circle" data-svg="traslados"></span><span>Traslados</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== RESULTS PAGE ===================== -->
+    <section id="results" class="screen results" hidden>
+      <header class="res-top">
+        <button class="res-back" id="resBack" aria-label="Volver">
+          <svg viewBox="0 0 24 24" data-icon="back"></svg>
+        </button>
+        <button class="res-mini-sbox" id="resMini">
+          <span class="res-mini-icon" id="resMiniIcon"></span>
+          <span class="res-mini-text">
+            <span class="res-mini-title" id="resMiniTitle">Alojamientos · Buenos Aires</span>
+            <span class="res-mini-sub" id="resMiniSub">21 dic – 27 dic · 1 hab, 2 personas</span>
+          </span>
+          <span class="res-mini-edit">
+            <svg viewBox="0 0 24 24" data-icon="edit"></svg>
+          </span>
+        </button>
+      </header>
+
+      <div class="res-filters" id="resFilters">
+        <button class="filter-chip">
+          <svg viewBox="0 0 24 24" data-icon="filter"></svg>
+          Filtros
+        </button>
+        <button class="filter-chip">Precio</button>
+        <button class="filter-chip">Categoría</button>
+        <button class="filter-chip">Mejor calificados</button>
+      </div>
+
+      <div class="res-count" id="resCount">12 resultados encontrados</div>
+
+      <main class="res-body" id="resBody"></main>
+    </section>
+
+    <!-- ===================== DISNEY LANDING ===================== -->
+    <section id="disneyLanding" class="screen landing landing--disney" hidden>
+      <header class="land-top">
+        <button class="land-back" data-landing-back aria-label="Volver">
+          <svg viewBox="0 0 24 24" data-icon="back"></svg>
+        </button>
+        <button class="land-share" aria-label="Compartir">
+          <svg viewBox="0 0 24 24" data-icon="share"></svg>
+        </button>
+      </header>
+
+      <div class="land-hero land-hero--disney">
+        <div class="land-hero-overlay"></div>
+        <div class="land-hero-content">
+          <span class="land-logo">✨ Disney</span>
+          <h1>El lugar más mágico<br>de la Tierra te espera</h1>
+          <p>Tickets, hoteles y paquetes para vivir Walt Disney World y Disneyland.</p>
+        </div>
+      </div>
+
+      <div class="land-body">
+        <section class="land-section">
+          <h2>¿Qué buscás hacer?</h2>
+          <div class="land-action-grid">
+            <button class="land-action" data-open-sbox-with="paquetes:Walt Disney World, Orlando">
+              <span class="la-icon" data-svg="paquetes"></span>
+              <span class="la-title">Paquetes</span>
+              <span class="la-sub">Vuelo + Hotel + Tickets</span>
+            </button>
+            <button class="land-action" data-open-sbox-with="alojamientos:Walt Disney World, Orlando">
+              <span class="la-icon" data-svg="alojamientos"></span>
+              <span class="la-title">Hoteles</span>
+              <span class="la-sub">Dentro y cerca del parque</span>
+            </button>
+            <button class="land-action" data-open-sbox-with="actividades:Walt Disney World, Orlando">
+              <span class="la-icon" data-svg="actividades"></span>
+              <span class="la-title">Tickets</span>
+              <span class="la-sub">Magic Kingdom, Epcot…</span>
+            </button>
+            <button class="land-action" data-open-sbox-with="vuelos:Orlando">
+              <span class="la-icon" data-svg="vuelos"></span>
+              <span class="la-title">Vuelos</span>
+              <span class="la-sub">A Orlando</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="land-section">
+          <h2>Los parques</h2>
+          <div class="land-parks">
+            <article class="park-card">
+              <div class="park-img" style="background:linear-gradient(135deg,#3b6cd9,#0f3a85)">🏰</div>
+              <div class="park-info">
+                <h3>Magic Kingdom</h3>
+                <p>El parque ícono con el castillo de Cenicienta y las atracciones clásicas.</p>
+              </div>
+            </article>
+            <article class="park-card">
+              <div class="park-img" style="background:linear-gradient(135deg,#52b788,#1b4332)">🌎</div>
+              <div class="park-info">
+                <h3>Epcot</h3>
+                <p>Tecnología, futuro y una vuelta al mundo en 11 pabellones.</p>
+              </div>
+            </article>
+            <article class="park-card">
+              <div class="park-img" style="background:linear-gradient(135deg,#ff7b00,#a83800)">🎬</div>
+              <div class="park-info">
+                <h3>Hollywood Studios</h3>
+                <p>Star Wars, Toy Story y el lado más cinematográfico de Disney.</p>
+              </div>
+            </article>
+            <article class="park-card">
+              <div class="park-img" style="background:linear-gradient(135deg,#5ec8b9,#0b6e6b)">🦁</div>
+              <div class="park-info">
+                <h3>Animal Kingdom</h3>
+                <p>Safari, dinosaurios y el mundo de Avatar en Pandora.</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="land-section land-tips">
+          <h2>Tips para tu viaje</h2>
+          <ul>
+            <li>Reservá tus tickets con anticipación para asegurar la fecha.</li>
+            <li>El paquete combina vuelo + hotel y suele ser el mejor precio.</li>
+            <li>Hospedarse dentro del complejo te da entrada extra antes de la apertura.</li>
+          </ul>
+        </section>
+      </div>
+
+      <footer class="land-footer">
+        <button class="btn-search" data-open-sbox-with="paquetes:Walt Disney World, Orlando">
+          Armar mi paquete a Disney
+        </button>
+      </footer>
+    </section>
+
+    <!-- ===================== UNIVERSAL LANDING ===================== -->
+    <section id="universalLanding" class="screen landing landing--universal" hidden>
+      <header class="land-top">
+        <button class="land-back" data-landing-back aria-label="Volver">
+          <svg viewBox="0 0 24 24" data-icon="back"></svg>
+        </button>
+        <button class="land-share" aria-label="Compartir">
+          <svg viewBox="0 0 24 24" data-icon="share"></svg>
+        </button>
+      </header>
+
+      <div class="land-hero land-hero--universal">
+        <div class="land-hero-overlay"></div>
+        <div class="land-hero-content">
+          <span class="land-logo">🌐 Universal</span>
+          <h1>Vení a vivir<br>el cine de cerca</h1>
+          <p>Harry Potter, Jurassic World, Minions y mucho más en Universal Orlando Resort.</p>
+        </div>
+      </div>
+
+      <div class="land-body">
+        <section class="land-section">
+          <h2>¿Qué buscás hacer?</h2>
+          <div class="land-action-grid">
+            <button class="land-action" data-open-sbox-with="paquetes:Universal Orlando Resort">
+              <span class="la-icon" data-svg="paquetes"></span>
+              <span class="la-title">Paquetes</span>
+              <span class="la-sub">Vuelo + Hotel + Tickets</span>
+            </button>
+            <button class="land-action" data-open-sbox-with="alojamientos:Universal Orlando Resort">
+              <span class="la-icon" data-svg="alojamientos"></span>
+              <span class="la-title">Hoteles</span>
+              <span class="la-sub">Resorts oficiales</span>
+            </button>
+            <button class="land-action" data-open-sbox-with="actividades:Universal Orlando Resort">
+              <span class="la-icon" data-svg="actividades"></span>
+              <span class="la-title">Tickets</span>
+              <span class="la-sub">1, 2 o 3 parques</span>
+            </button>
+            <button class="land-action" data-open-sbox-with="vuelos:Orlando">
+              <span class="la-icon" data-svg="vuelos"></span>
+              <span class="la-title">Vuelos</span>
+              <span class="la-sub">A Orlando</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="land-section">
+          <h2>Los parques</h2>
+          <div class="land-parks">
+            <article class="park-card">
+              <div class="park-img" style="background:linear-gradient(135deg,#7c3aed,#2e0a72)">⚡</div>
+              <div class="park-info">
+                <h3>Islands of Adventure</h3>
+                <p>El Mundo Mágico de Harry Potter y Jurassic Park.</p>
+              </div>
+            </article>
+            <article class="park-card">
+              <div class="park-img" style="background:linear-gradient(135deg,#0d9488,#064e4a)">🎬</div>
+              <div class="park-info">
+                <h3>Universal Studios</h3>
+                <p>Minions, Simpsons, Transformers y más franquicias del cine.</p>
+              </div>
+            </article>
+            <article class="park-card">
+              <div class="park-img" style="background:linear-gradient(135deg,#0ea5e9,#0c4a6e)">🌊</div>
+              <div class="park-info">
+                <h3>Volcano Bay</h3>
+                <p>Parque acuático tropical para el día más caluroso.</p>
+              </div>
+            </article>
+            <article class="park-card">
+              <div class="park-img" style="background:linear-gradient(135deg,#f59e0b,#92400e)">🦖</div>
+              <div class="park-info">
+                <h3>Epic Universe</h3>
+                <p>El nuevo parque con Super Nintendo, How to Train Your Dragon y más.</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="land-section land-tips">
+          <h2>Tips para tu viaje</h2>
+          <ul>
+            <li>El Express Pass te ahorra horas de fila en las atracciones más populares.</li>
+            <li>Hospedarse en un resort oficial te da Express Pass gratis en algunos hoteles.</li>
+            <li>Reservá entradas multi-parque para vivir Harry Potter completo.</li>
+          </ul>
+        </section>
+      </div>
+
+      <footer class="land-footer">
+        <button class="btn-search" data-open-sbox-with="paquetes:Universal Orlando Resort">
+          Armar mi paquete a Universal
+        </button>
+      </footer>
+    </section>
+
+    <!-- ===================== SOFIA LANDING (chat) ===================== -->
+    <section id="sofiaLanding" class="screen sofia-landing" hidden>
+      <header class="sl-top">
+        <button class="sl-action" data-back-home aria-label="Volver">
+          <svg viewBox="0 0 24 24" data-icon="back"></svg>
+        </button>
+        <div class="sl-brand">
+          <span class="sl-avatar-mini" data-svg="sofia"></span>
+          <span>SOFIA</span>
+        </div>
+        <button class="sl-action" id="slNewChat" aria-label="Nueva conversación" title="Nueva conversación">
+          <svg viewBox="0 0 24 24" data-icon="refresh"></svg>
+        </button>
+      </header>
+
+      <!-- SOFIA nav chrome (pinned tabs / segmented) — rendered by Vision Explorer -->
+      <div class="sofia-nav" id="sofiaNav" hidden></div>
+
+      <main class="sl-chat" id="slChat"></main>
+
+      <div class="sl-suggest" id="slSuggest">
+        <button class="sl-chip" data-sl-suggest="Quiero ir a Disney con la familia en julio">Disney en familia</button>
+        <button class="sl-chip" data-sl-suggest="Buscame vuelos baratos a Río de Janeiro">Vuelo barato a Río</button>
+        <button class="sl-chip" data-sl-suggest="Una escapada de fin de semana cerca de Buenos Aires">Fin de semana cerca</button>
+        <button class="sl-chip" data-sl-suggest="Necesito recomendaciones de destinos para febrero">Ideas para febrero</button>
+      </div>
+
+      <!-- SOFIA side-nav drawer (pattern 3) — rendered by Vision Explorer -->
+      <div class="sofia-drawer-backdrop" id="sofiaDrawerBackdrop" hidden></div>
+      <aside class="sofia-drawer" id="sofiaDrawer" hidden></aside>
+
+      <!-- "Ver más" sheet for pinned-tabs pattern — rendered by Vision Explorer -->
+      <div class="bs-backdrop" id="sofiaSheetBackdrop" hidden></div>
+      <div class="bottom-sheet" id="sofiaMoreSheet" hidden>
+        <div class="bs-handle"></div>
+        <h3 class="bs-title">Más productos</h3>
+        <div class="bs-grid" id="sofiaMoreGrid"></div>
+      </div>
+
+      <footer class="sl-input-bar">
+        <button class="sl-drawer-trigger" id="sofiaDrawerTrigger" aria-label="Productos" hidden>
+          <svg viewBox="0 0 24 24" data-icon="more-dots"></svg>
+        </button>
+        <div class="sl-input-wrap">
+          <textarea id="slInput" rows="1" placeholder="Escribí lo que estás buscando..." maxlength="500"></textarea>
+          <button class="sl-send" id="slSend" aria-label="Enviar">
+            <svg viewBox="0 0 24 24" data-icon="send"></svg>
+          </button>
+        </div>
+      </footer>
+    </section>
+
+    <!-- ===================== KEYBOARD ===================== -->
+    <section id="kbModal" class="overlay" hidden>
+      <header class="overlay-top">
+        <button class="overlay-back" id="kbBack" aria-label="Volver">
+          <svg viewBox="0 0 24 24" data-icon="back"></svg>
+        </button>
+        <div class="overlay-input-wrap">
+          <svg viewBox="0 0 24 24" class="ic" data-icon="pin"></svg>
+          <span class="overlay-input" id="kbInput"></span>
+          <button class="overlay-clear" id="kbClear" aria-label="Borrar">
+            <svg viewBox="0 0 24 24" data-icon="close-small"></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="overlay-suggest-title" id="kbTitle">Destinos populares</div>
+      <ul class="overlay-suggest" id="kbSuggest"></ul>
+
+      <div class="keyboard" id="keyboard"></div>
+    </section>
+
+    <!-- ===================== CALENDAR ===================== -->
+    <section id="calModal" class="overlay overlay--white" hidden>
+      <header class="overlay-top overlay-top--white">
+        <button class="overlay-back" id="calClose" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" data-icon="close"></svg>
+        </button>
+        <h3 class="overlay-title" id="calTitle">Seleccioná la fecha</h3>
+      </header>
+
+      <div class="cal-range-summary" id="calSummary">
+        <div class="cal-range-cell">
+          <span class="cal-range-label">Desde</span>
+          <span class="cal-range-value" id="calFrom">Elegí una fecha</span>
+        </div>
+        <div class="cal-range-cell">
+          <span class="cal-range-label">Hasta</span>
+          <span class="cal-range-value" id="calTo">Elegí una fecha</span>
+        </div>
+      </div>
+
+      <div class="cal-weekdays">
+        <span>D</span><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span>
+      </div>
+
+      <div class="cal-months" id="calMonths"></div>
+
+      <footer class="cal-footer">
+        <button class="btn-search" id="calApply">Aplicar</button>
+      </footer>
+    </section>
+
+    <!-- ===================== PASSENGERS ===================== -->
+    <section id="paxModal" class="overlay overlay--white" hidden>
+      <header class="overlay-top overlay-top--white">
+        <button class="overlay-back" id="paxClose" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" data-icon="close"></svg>
+        </button>
+        <h3 class="overlay-title" id="paxTitle">Pasajeros</h3>
+      </header>
+      <div class="pax-body" id="paxBody"></div>
+      <footer class="cal-footer">
+        <button class="btn-search" id="paxApply">Aplicar</button>
+      </footer>
+    </section>
+
+    <!-- ===================== TOAST ===================== -->
+    <div id="toast" class="toast" hidden></div>
+  </div>
+
+  <!-- ===================== VISION EXPLORER CONTROL PANEL ===================== -->
+  <button id="vpGear" class="vp-gear" aria-label="Panel de control">⚙</button>
+  <aside id="visionPanel" class="vision-panel" aria-label="Vision Explorer">
+    <header class="vp-header">
+      <div class="vp-title">🧭 Vision Explorer</div>
+      <button id="vpClose" class="vp-close" aria-label="Cerrar">×</button>
+    </header>
+    <div class="vp-body">
+      <section class="vp-section">
+        <h4 class="vp-h4">North star / Preset</h4>
+        <div class="vp-presets" id="vpPresets"></div>
+      </section>
+      <section class="vp-section">
+        <h4 class="vp-h4">Toggles</h4>
+        <div id="vpToggles"></div>
+      </section>
+      <section class="vp-section vp-actions">
+        <button id="vpShare" class="vp-btn vp-btn--primary">🔗 Copiar link de esta config</button>
+        <button id="vpReset" class="vp-btn">↺ Volver al preset</button>
+      </section>
+    </div>
+  </aside>
+
+  <script src="app.js"></script>
+</body>
+</html>
