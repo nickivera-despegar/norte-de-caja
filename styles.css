@@ -1310,6 +1310,77 @@ body.vp-open .vp-gear { display: none; }
   background: #ece7fb; border-radius: 20px; margin: 0 4px;
 }
 
+/* ============================================================
+   UI SPIRIT PASS 2
+   (c) search bar from 1.svg · (d) searchbox parity ·
+   (e) benefits one line · (f)(g) Disney/Universal low-hierarchy shifu
+   ============================================================ */
+
+/* (c) Top search bar — light-grey rounded pill (#F2F4F5) per 1.svg */
+.home-search-row { align-items: center; }
+.home-searchbar {
+  background: #F2F4F5; color: #565A60; border-radius: 20px;
+  height: 40px; padding: 0 14px; font-size: 14px; font-weight: 400;
+  display: flex; align-items: center; gap: 10px;
+}
+.home-searchbar > svg { display: inline-block; flex: 0 0 auto; width: 20px; height: 20px; color: #565A60; }
+.home-searchbar > span { color: #565A60; flex: 1; text-align: left; }
+
+/* shifu circles — translucent white .16, no border (matches 1.svg), home + searchbox */
+.chip-icon, .chip--badge .chip-icon,
+.sbox-tabs .tab-icon {
+  width: 54px; height: 54px; border-radius: 27px;
+  background: rgba(255,255,255,.16); border: none;
+}
+.chip-icon svg, .sbox-tabs .tab-icon svg { width: 24px; height: 24px; color: #fff; }
+
+/* (d) SOFIA gradient ring on the home chip AND the searchbox tab */
+.chip[data-open-sbox="sofia"] .chip-icon,
+.bs-item[data-product="sofia"] .bs-circle,
+.sbox-tabs .tab[data-tab="sofia"] .tab-icon {
+  background:
+    linear-gradient(var(--purple-800), var(--purple-800)) padding-box,
+    linear-gradient(135deg, #8b6bff 0%, #00d6a8 55%, #ff8a3d 100%) border-box;
+  border: 2.5px solid transparent;
+}
+/* keep the selected searchbox tab readable */
+.sbox-tabs .tab.active .tab-icon { background: var(--white); }
+.sbox-tabs .tab.active .tab-icon svg { color: var(--purple-800); }
+
+/* (e) Mis beneficios — one line, left aligned, smaller */
+.benefits-banner {
+  background: rgba(255,255,255,.16); border-radius: 16px;
+  padding: 7px 12px; font-size: 11.5px; justify-content: flex-start; gap: 8px;
+}
+.benefits-left { gap: 8px; min-width: 0; }
+.benefits-left > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.benefits-banner .chev { margin-left: auto; font-size: 16px; }
+
+/* (f)(g) Disney/Universal — top of the light section */
+.du-home { margin: 14px 0 6px; }
+.du-home--banners { display: flex; flex-direction: column; gap: 8px; }
+.du-home--chips { display: flex; flex-direction: row; gap: 18px; }
+.du-home--chips .du-chip {
+  flex-direction: column; align-items: center; gap: 6px;
+  background: transparent; border: none; border-radius: 0; padding: 0;
+  color: var(--text); font-size: 12px;
+}
+.du-home--chips .du-chip .du-ic {
+  width: 54px; height: 54px; border-radius: 27px;
+  background: linear-gradient(160deg, #efeaff 0%, #d8c9ff 100%);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--purple-800);
+}
+.du-home--chips .du-chip .du-ic svg { width: 24px; height: 24px; color: var(--purple-800); }
+
+/* (a) Fix: SOFIA pinned tabs sit on a WHITE bar — give the icons a visible (purple-on-light) style */
+.sofia-nav .nav-tabs .tab-icon { background: var(--purple-100); border: none; }
+.sofia-nav .nav-tabs .tab-icon svg { color: var(--purple-800); }
+
+/* (b) Segmented unity — same horizontal insets in both views; placed above the shifu in the box */
+.sofia-nav--seg { padding: 10px 16px; }
+.sbox-top .sbox-seg { padding: 4px 0 12px; }
+
 /* Airbnb-style soft present — gentle fade + scale (overrides the iOS push for in-place morphs) */
 .screen--soft.active { animation: softMorph .56s cubic-bezier(.22,.61,.36,1); }
 @keyframes softMorph {

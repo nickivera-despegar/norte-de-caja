@@ -1302,7 +1302,7 @@ function applyVision() {
   // Disney/Universal banner/chip live on the light home body, never the purple search area
   const duHost = document.getElementById("duHome");
   const duHomeBody = document.querySelector(".home-body");
-  if (duHost && duHomeBody && duHost.parentElement !== duHomeBody) duHomeBody.appendChild(duHost);
+  if (duHost && duHomeBody) duHomeBody.insertBefore(duHost, duHomeBody.firstChild); // top of the light section
 
   // Disney / Universal placement
   applyDU(eff);
@@ -1333,6 +1333,7 @@ function applyDU(eff) {
       html += `<button class="du-chip" data-go-landing="${key}"><span class="du-ic" data-svg="${key}"></span>${label}</button>`;
     }
   });
+  host.className = "du-home" + (eff.disney === "chip" ? " du-home--chips" : " du-home--banners");
   host.innerHTML = html;
   injectIcons(host);
   host.querySelectorAll("[data-go-landing]").forEach(b => b.addEventListener("click", () => goLanding(b.dataset.goLanding)));
@@ -1447,6 +1448,9 @@ function applySofiaNav(eff) {
   const dBack = document.getElementById("sofiaDrawerBackdrop");
   if (!nav) return;
 
+  // remember if the drawer was open, so config changes update it in place without closing
+  const drawerWasOpen = !!(drawer && !drawer.hidden && drawer.classList.contains("open"));
+
   // reset all chrome
   nav.innerHTML = ""; nav.hidden = true; nav.className = "sofia-nav";
   if (seg) { seg.innerHTML = ""; seg.hidden = true; }
@@ -1509,6 +1513,10 @@ function applySofiaNav(eff) {
       setTimeout(() => sofiaMorphTo(lastRealProduct()), 220);                 // then soft screen morph
     }));
     if (seg) {
+      // (b)(ii) place the segmented ABOVE the shifu in the box, matching SOFIA's position for a sense of unity
+      const sboxTop = document.querySelector("#sbox .sbox-top");
+      const sboxTabs = document.getElementById("sboxTabs");
+      if (sboxTop && sboxTabs && seg.parentElement !== sboxTop) sboxTop.insertBefore(seg, sboxTabs);
       seg.innerHTML = segHTML("box"); seg.hidden = false;
       seg.querySelectorAll("[data-seg]").forEach(b => b.addEventListener("click", () => {
         if (b.dataset.seg !== "chat") return;
@@ -1526,6 +1534,10 @@ function applySofiaNav(eff) {
       };
     }
     buildSofiaDrawer(eff, eff.navPattern === "4"); // pattern 4 = compact (extras under "Más")
+    if (drawerWasOpen && drawer) {                 // stay open + update live across config changes
+      drawer.hidden = false; if (dBack) dBack.hidden = false;
+      drawer.classList.add("open");
+    }
     if (dBack) dBack.onclick = closeSofiaDrawer;
   }
 }
